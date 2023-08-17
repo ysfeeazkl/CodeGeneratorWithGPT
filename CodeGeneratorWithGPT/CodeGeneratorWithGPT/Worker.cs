@@ -9,14 +9,17 @@
 
         List<string> entities = new List<string>() {"Basket" ,
             "BasketItem" ,
-            "Category" ,
+            "Category",
+            "Comment",
             "OperationClaim" ,
             "Option" ,
             "Order" ,
             "Product" ,
             "ProductAndCategory" ,
             "ProductPicture" ,
-            "Report" ,
+            "Report",
+            "ReportAndCategory",
+            "ReportPicture",
             "User" ,
             "UserAndOperationClaim" ,
             "UserToken"};
@@ -29,7 +32,7 @@
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            CreateHandlerCreated();
+            MappingsGenerator();
         }
 
 
@@ -157,7 +160,48 @@
 
                 
             }
+        }
 
+        void MappingsGenerator()
+        {
+            foreach (var item in entities)
+            {
+
+                string entityName = item;
+                string projectDirectory = @"C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Business\Beryque.Application\Mapping";
+                string targetDirectory = Path.Combine(projectDirectory, $"{entityName}Mappings");
+
+                string fileName = $"{entityName}Profile.cs";
+
+
+                if (!Directory.Exists(targetDirectory))
+                {
+                    Directory.CreateDirectory(targetDirectory);
+                }
+
+                string generatedCode = $@"
+using Beryque.Application.Features.Commands.{entityName}Commands;
+using Beryque.Domain.Entities;
+
+namespace Beryque.Application.Mapping.{entityName}Mappings;
+
+public class {entityName}Profile : Profile
+{{
+    public {entityName}Profile()
+    {{
+        CreateMap<Create{entityName}Command, {entityName}>();
+        CreateMap<Delete{entityName}Command, {entityName}>();
+        CreateMap<Update{entityName}Command, {entityName}>();
+    }}
+}}
+            ";
+
+                string filePath = Path.Combine(targetDirectory, fileName);
+                File.WriteAllText(filePath, generatedCode);
+                
+            }
+            Console.WriteLine("Bittis");
+            Console.ReadKey();
         }
     }
 }
