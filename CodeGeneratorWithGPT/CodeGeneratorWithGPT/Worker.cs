@@ -1,4 +1,8 @@
-﻿namespace CodeGeneratorWithGPT
+﻿using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+
+namespace CodeGeneratorWithGPT
 {
     public class Worker : BackgroundService
     {
@@ -29,7 +33,10 @@
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            CreateHandlerCreated();
+            //GPT.gpt();
+            //CreateHandlerCreated();
+
+            TemplateCreate();
         }
 
 
@@ -48,6 +55,44 @@
             Console.WriteLine($"File '{filePath}' has been created.");
         }
 
+        void TemplateCreate()
+        {
+
+            List<string> entities = new List<string>() {
+    "Basket",
+    "BasketItem",
+    "Category",
+    "OperationClaim",
+    "Option",
+    "Order",
+    "Product",
+    "ProductAndCategory",
+    "ProductPicture",
+    "Report",
+    "User",
+    "UserAndOperationClaim",
+    "UserToken"
+};
+
+            List<ClassType> classTypes = new List<ClassType>();
+
+            foreach (string entity in entities)
+            {
+                string template = $"using Beryque.Domain.Entities;\n\nnamespace Beryque.Application.Features.Commands.{entity}Commands\n{{\n    public class Create{entity}CommandHandler : IRequestHandler<Create{entity}Command, Unit>\n    {{\n        readonly private I{entity}Repository _{entity.ToLower()}Repository;\n        readonly private IMapper _mapper;\n\n        public Create{entity}CommandHandler(I{entity}Repository {entity.ToLower()}Repository, IMapper mapper)\n        {{\n            _{entity.ToLower()}Repository = {entity.ToLower()}Repository;\n            _mapper = mapper;\n        }}\n\n        public async Task<Unit> Handle(Create{entity}Command request, CancellationToken cancellationToken)\n        {{\n            var {entity.ToLower()} = _mapper.Map<{entity}>(request);\n            await _{entity.ToLower()}Repository.AddAsync({entity.ToLower()});\n            return Unit.Value;\n        }}\n    }}\n}}";
+
+                classTypes.Add(new ClassType
+                {
+                    Folder = $"C:\\Users\\yazakli\\Documents\\GitHub\\beryque\\backend\\Business\\Beryque.Application\\Features\\Commands\\{entity}Commands",
+                    Template = template,
+                    FolderName = $"Create{entity}CommandHandler",
+                    FileExtension = ".cs"
+                });
+            }
+
+            string jsonResult = JsonSerializer.Serialize(classTypes, new JsonSerializerOptions { WriteIndented = true });
+            Console.WriteLine(jsonResult);
+
+        }
 
         void DeleteHandlerCreated()
         {
@@ -104,6 +149,19 @@
 
         void CreateHandlerCreated()
         {
+            List<string> entities = new List<string>() {"Basket" ,
+            "BasketItem" ,
+            "Category" ,
+            "OperationClaim" ,
+            "Option" ,
+            "Order" ,
+            "Product" ,
+            "ProductAndCategory" ,
+            "ProductPicture" ,
+            "Report" ,
+            "User" ,
+            "UserAndOperationClaim" ,
+            "UserToken"};
             foreach (var item in entities)
             {
                 string entityName = item;
@@ -159,5 +217,33 @@
             }
 
         }
+    }
+
+    public static class GPT
+    {
+        public static async void gpt()
+        {
+            string apiKey = "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";
+            string prompt = "Selam gpt nasılsın'";
+
+            using HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+            string apiUrl = "https://api.openai.com/v1/engines/davinci-codex/completions";
+            string requestBody = $"{{ \"prompt\": \"{prompt}\", \"max_tokens\": 50 }}";
+            var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync(apiUrl, content);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseContent);
+        }
+    }
+
+    public class ClassType
+    {
+        public string Folder { get; set; } //dosyanın kaydedileceği dizin
+        public string Template { get; set; } //dosya template i
+        public string FolderName { get; set; } //classın isimi örneğin "CreateOperationClaimCommandHandler"
+        public string FileExtension { get; set; } //Dosya uzantısı örneğin ".cs"
     }
 }
