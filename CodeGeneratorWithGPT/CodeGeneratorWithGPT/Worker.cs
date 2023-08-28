@@ -13,14 +13,17 @@ namespace CodeGeneratorWithGPT
 
         List<string> entities = new List<string>() {"Basket" ,
             "BasketItem" ,
-            "Category" ,
+            "Category",
+            "Comment",
             "OperationClaim" ,
             "Option" ,
             "Order" ,
             "Product" ,
             "ProductAndCategory" ,
             "ProductPicture" ,
-            "Report" ,
+            "Report",
+            "ReportAndCategory",
+            "ReportPicture",
             "User" ,
             "UserAndOperationClaim" ,
             "UserToken"};
@@ -37,6 +40,7 @@ namespace CodeGeneratorWithGPT
             //CreateHandlerCreated();
 
             TemplateCreate();
+            ControllerGenerator();
         }
 
 
@@ -215,7 +219,153 @@ namespace CodeGeneratorWithGPT
 
                 
             }
+        }
 
+        void MappingsGenerator()
+        {
+            foreach (var item in entities)
+            {
+
+                string entityName = item;
+                string projectDirectory = @"C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Business\Beryque.Application\Mapping";
+                string targetDirectory = Path.Combine(projectDirectory, $"{entityName}Mappings");
+
+                string fileName = $"{entityName}Profile.cs";
+
+
+                if (!Directory.Exists(targetDirectory))
+                {
+                    Directory.CreateDirectory(targetDirectory);
+                }
+
+                string generatedCode = $@"
+using Beryque.Application.Features.Commands.{entityName}Commands;
+using Beryque.Domain.Entities;
+
+namespace Beryque.Application.Mapping.{entityName}Mappings;
+
+public class {entityName}Profile : Profile
+{{
+    public {entityName}Profile()
+    {{
+        CreateMap<Create{entityName}Command, {entityName}>();
+        CreateMap<Delete{entityName}Command, {entityName}>();
+        CreateMap<Update{entityName}Command, {entityName}>();
+    }}
+}}
+            ";
+
+                string filePath = Path.Combine(targetDirectory, fileName);
+                File.WriteAllText(filePath, generatedCode);
+                
+            }
+            Console.WriteLine("Bittis");
+            Console.ReadKey();
+        }
+
+
+        void ControllerGenerator()
+        {
+            foreach (var item in entities)
+            {
+
+                string entityName = item;
+                string projectDirectory = @"C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Services\Beryque.API\Controllers";
+                string targetDirectory = projectDirectory;
+
+                string fileName = $"{entityName}Controller.cs";
+
+
+                //if (!Directory.Exists(targetDirectory))
+                //{
+                //    Directory.CreateDirectory(targetDirectory);
+                //}
+
+                string generatedCode = $@"
+using AutoMapper;
+using Beryque.Application.Features.Commands.{entityName}Commands;
+using Beryque.Application.Features.Commands.UserCommands;
+using Beryque.Application.Features.Queries.{entityName}Queries;
+using Beryque.Application.Interfaces.Services;
+using Beryque.Domain.Common;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using IResult = Beryque.Domain.Common.IResult;
+
+namespace Beryque.API.Controllers
+{{
+    [Route(""api/[controller]"")]
+    [ApiController]
+    public class {entityName}Controller : Controller
+    {{
+        private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
+        private readonly IClaimProvider _provider;
+
+        public {entityName}Controller(IMediator mediator, IMapper mapper, IClaimProvider provider)
+        {{
+            _mediator = mediator;
+            _mapper = mapper;
+            _provider = provider;
+        }}
+
+        [HttpGet(""get/{{id}}"")]
+        [ProducesResponseType(typeof(IResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IResult), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Get(int Id)
+        {{
+            var query = new Get{entityName}Query() {{ Id = Id }};
+            var result = await _mediator.Send(query);
+            if (result.Succeeded && result.Data != null)
+                return Ok(result);
+            if (result.Data == null)
+                return NotFound(result);
+            return BadRequest(result);
+        }}
+
+        [HttpPost]
+        [ProducesResponseType(typeof(IResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Create(Create{entityName}Request request)
+        {{
+            var command = _mapper.Map<Create{entityName}Command>(request);
+            var result = await _mediator.Send(command);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(result);
+        }}
+
+        [HttpPut]
+        [ProducesResponseType(typeof(IResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Update(Update{entityName}Request request)
+        {{
+
+            var command = _mapper.Map<Update{entityName}Command>(request);
+            var result = await _mediator.Send(command);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(result);
+        }}
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(IResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Delete(Delete{entityName}Request command)
+        {{
+            var result = await _mediator.Send(command);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(result);
+        }}
+
+    }}
+}}
+            ";
+
+                string filePath = Path.Combine(targetDirectory, fileName);
+                File.WriteAllText(filePath, generatedCode);
+            }
+
+            Console.WriteLine("Bittis");
+            Console.ReadKey();
         }
     }
 
