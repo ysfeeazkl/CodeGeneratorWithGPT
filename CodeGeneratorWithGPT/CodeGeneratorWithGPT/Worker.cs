@@ -1,6 +1,9 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.IO;
+
 
 namespace CodeGeneratorWithGPT
 {
@@ -39,8 +42,10 @@ namespace CodeGeneratorWithGPT
             //GPT.gpt();
             //CreateHandlerCreated();
 
-            TemplateCreate();
-            ControllerGenerator();
+            //TemplateCreate();
+            //ControllerGenerator();
+
+            PDFgenerate();
         }
 
 
@@ -366,6 +371,29 @@ namespace Beryque.API.Controllers
 
             Console.WriteLine("Bittis");
             Console.ReadKey();
+        }
+
+        void PDFgenerate()
+        {
+
+            string apiResponse = "ChatGPT'den gelen yanıt metni burada olacak.";
+            //string projectDirectory = @"C:\Users\yazakli\Desktop\";
+            string projectDirectory = @"C:\\Users\\yazakli\\Documents\\GitHub\\CodeGeneratorWithGPT\\CodeGeneratorWithGPT\\CodeGeneratorWithGPT\\Documents";
+
+            string targetDirectory = Path.Combine(projectDirectory, $"testdocument.pdf");
+
+
+            //if (!Directory.Exists(targetDirectory))
+            //{
+            //    Directory.CreateDirectory(targetDirectory);
+            //}
+
+            using (StreamWriter streamWriter = new StreamWriter(targetDirectory))
+            {
+                streamWriter.Write(apiResponse);
+            }
+
+
         }
     }
 
