@@ -45,7 +45,7 @@ namespace CodeGeneratorWithGPT
             //TemplateCreate();
             //ControllerGenerator();
 
-            PDFgenerate();
+            ViewModelsRequestGenerator();
         }
 
 
@@ -158,7 +158,7 @@ namespace CodeGeneratorWithGPT
 
         void CreateHandlerCreated()
         {
-            List<string> entities = new List<string>() {"Basket" ,
+            List<string> entities = new List<string>() {"Basket" , //C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Services\Beryque.API\ViewModels\Request\
             "BasketItem" ,
             "Category" ,
             "OperationClaim" ,
@@ -222,7 +222,7 @@ namespace CodeGeneratorWithGPT
                 string filePath = Path.Combine(targetDirectory, fileName);
                 File.WriteAllText(filePath, generatedCode);
 
-                
+
             }
         }
 
@@ -262,7 +262,7 @@ public class {entityName}Profile : Profile
 
                 string filePath = Path.Combine(targetDirectory, fileName);
                 File.WriteAllText(filePath, generatedCode);
-                
+
             }
             Console.WriteLine("Bittis");
             Console.ReadKey();
@@ -373,6 +373,69 @@ namespace Beryque.API.Controllers
             Console.ReadKey();
         }
 
+        void ViewModelsRequestGenerator()
+        {
+            List<string> entities = new List<string>() {"Basket" , //C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Services\Beryque.API\ViewModels\Request\
+            "BasketItem" ,
+            "Category" ,
+            "Comment" ,
+            "OperationClaim" ,
+            "Option" ,
+            "Order" ,
+            "Product" ,
+            "ProductAndCategory" ,
+            "ProductPicture" ,
+            "Report" ,
+            "ReportAndCategory" ,
+            "ReportPicture" ,
+            "User" ,
+            "UserAndOperationClaim" ,
+            "Rate" ,
+            "ProductOutOfStock" ,
+            "ProductSale" ,
+            "UserToken"};
+
+            List<string> crud = new List<string>()
+            {
+                "Create",
+                "Update",
+                "Delete"
+            };
+
+
+            foreach (var item in entities)
+            {
+                for (int i = 0; i < crud.Count(); i++)
+                {
+                    string entityName = item;
+                    string projectDirectory = @"C:\Users\yusuf\OneDrive\Belgeler\GitHub\beryque\backend\Services\Beryque.API\ViewModels\Request\";
+                    string targetDirectory = Path.Combine(projectDirectory, $"{entityName}Request");
+                    string Crud = crud[i];
+                    string fileName = $"{Crud}{entityName}Request.cs";
+
+
+                    if (!Directory.Exists(targetDirectory))
+                    {
+                        Directory.CreateDirectory(targetDirectory);
+                    }
+
+                    string generatedCode = $@"
+namespace Beryque.API.ViewModels.Requests.{entityName}Request;
+
+public class {Crud}{entityName}Request" + "{\n}";
+
+
+                    string filePath = Path.Combine(targetDirectory, fileName);
+                    File.WriteAllText(filePath, generatedCode);
+                }
+
+            }
+
+            Console.WriteLine("işlem bitti");
+
+        }
+
+
         void PDFgenerate()
         {
 
@@ -397,6 +460,14 @@ namespace Beryque.API.Controllers
         }
     }
 
+    public class ClassType
+    {
+        public string Folder { get; set; } //dosyanın kaydedileceği dizin
+        public string Template { get; set; } //dosya template i
+        public string FolderName { get; set; } //classın isimi örneğin "CreateOperationClaimCommandHandler"
+        public string FileExtension { get; set; } //Dosya uzantısı örneğin ".cs"
+    }
+
     public static class GPT
     {
         public static async void gpt()
@@ -417,11 +488,8 @@ namespace Beryque.API.Controllers
         }
     }
 
-    public class ClassType
-    {
-        public string Folder { get; set; } //dosyanın kaydedileceği dizin
-        public string Template { get; set; } //dosya template i
-        public string FolderName { get; set; } //classın isimi örneğin "CreateOperationClaimCommandHandler"
-        public string FileExtension { get; set; } //Dosya uzantısı örneğin ".cs"
-    }
+
 }
+
+
+
